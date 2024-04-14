@@ -3,49 +3,58 @@ import { useState, useEffect } from 'react';
 import axios from "axios";
 import Cookies from 'js-cookie';
 
-const TableThree = () => {
+interface User {
+  _id: string;
+  username: string;
+  fullname: string;
+  phone: string;
+  email: string;
+  role: string;
+  occupation: string;
+  bio: string;
+};
 
-  const [rooms, setRooms] = useState([]);
-  const [isEquipmentShown, setIsEquipmentShown] = useState(false);
-  const [shownEquipmentRoomId, setShownEquipmentRoomId] = useState(null);
+const TableThreeUser = () => {
+
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    const fetchRooms = async () => {
+    const fetchusers = async () => {
       try {
         const token = Cookies.get('auth');
         console.log(token);
-        const response = await axios.get('http://localhost:4000/room/rooms', {
+        const response = await axios.get('http://localhost:4000/user/users', {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
-        setRooms(response.data);
+        setUsers(response.data);
       } catch (error) {
-        console.error('Error fetching rooms:', error);
+        console.error('Error fetching users:', error);
       }
     };
 
-    fetchRooms();
+    fetchusers();
   }, []);
 
 
-  const deleteRoom = async (roomId: string) => {
+  const deleteUser = async (userId: string) => {
     const token = Cookies.get('auth');
     console.log(token);
     try {
-      const response = await axios.delete(`http://localhost:4000/room/rooms/${roomId}`, {
+      const response = await axios.delete(`http://localhost:4000/user/users/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       console.log(response.data);
-      setRooms([]);
-      const response2 = await axios.get('http://localhost:4000/room/rooms', {
+      setUsers([]);
+      const response2 = await axios.get('http://localhost:4000/user/users', {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      setRooms(response2.data);
+      setUsers(response2.data);
 
     } catch (error) {
       console.error('Error:', error);
@@ -60,16 +69,16 @@ const TableThree = () => {
           <thead>
             <tr className="bg-gray-2 text-left dark:bg-meta-4">
               <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                Room Number + Floor
+                Username + Fullname
               </th>
               <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                Room Capacity
+                Phone Number
               </th>
               <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                Room Status
+                Role
               </th>
               <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                Room Equipment
+                Occupation
               </th>
               <th className="px-4 py-4 font-medium text-black dark:text-white">
                 Actions
@@ -77,39 +86,40 @@ const TableThree = () => {
             </tr>
           </thead>
           <tbody>
-            {rooms.map((room) => (
-              <tr key={room?._id}>
+            {users.map((user) => (
+              <tr key={user?._id}>
                 <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                   <h5 className="font-medium text-black dark:text-white">
-                    Room: {room?.room_number}
+                    {user?.fullname}
                   </h5>
-                  <p className="text-sm">Floor: {room?.room_floor}</p>
+                  <p className="text-sm">Username: {user?.username}</p>
                 </td>
                 <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   <p className="text-black dark:text-white">
-                   {room?.room_capacity}
+                   {user?.phone}
                   </p>
                 </td>
                 <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   <p
                     className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                      room?.room_status === "available"
+                      user?.role === "user"
                         ? "bg-success text-success"
-                        : room?.room_status === "not available"
+                        : user?.role === "admin"
                           ? "bg-danger text-danger"
                           : "bg-warning text-warning"
                     }`}
                   >
-                    {room?.room_status}
+                    {user?.role}
                   </p>
                 </td>
                 <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                  <div className="relative inline-block">
-                    <button
-                      onMouseEnter={() => setShownEquipmentRoomId(room._id)}
-                      onMouseLeave={() => setShownEquipmentRoomId(null)}
-                      className="inline-flex items-center justify-center rounded-md border border-meta-3 px-2 py-1 text-center font-tiny text-meta-3 hover:bg-opacity-90 lg:px-4 xl:px-5"
-                    >
+                  <p className="text-black dark:text-white">
+                   {user?.occupation}
+                  </p>
+                </td>
+                <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                  <div className="flex items-center space-x-3.5">
+                    <button className="hover:text-primary">
                       <svg
                         className="fill-current"
                         width="18"
@@ -127,19 +137,8 @@ const TableThree = () => {
                           fill=""
                         />
                       </svg>
-                      </button>
-                    {shownEquipmentRoomId === room._id && (
-                      <div 
-                        className="absolute left-1/2 transform -translate-x-1/2 -top-full mt-14 inline-flex items-center justify-center rounded-md border bg-meta-3 px-5 py-2 text-center font-small text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
-                      >
-                        {room?.room_equipments.join(' - ')}
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                  <div className="flex items-center space-x-3.5">
-                    <button className="hover:text-primary" onClick={() => deleteRoom(room?._id)}>
+                    </button>
+                    <button className="hover:text-primary" onClick={() => deleteUser(user?._id)}>
                       <svg
                         className="fill-current"
                         width="18"
@@ -177,4 +176,4 @@ const TableThree = () => {
   );
 };
 
-export default TableThree;
+export default TableThreeUser;

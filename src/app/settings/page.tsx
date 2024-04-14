@@ -93,6 +93,8 @@ const Settings = () => {
       const newUser = { ...user, ...response.data };
       Cookies.set('user', JSON.stringify(newUser));
       
+      window.dispatchEvent(new CustomEvent('userCookieUpdated'));
+
       console.log('User updated:', response.data);
     } catch (error: any) {
       console.error("error: ",error);

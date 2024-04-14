@@ -8,6 +8,7 @@ import Cookies from 'js-cookie';
 interface User {
   _id: string;
   username: string;
+  fullname: string;
   email: string;
   role: string;
   occupation: string;
@@ -39,8 +40,16 @@ const DropdownUser = () => {
       }
     };
 
+    const handleUserCookieUpdate = () => {
+      fetchUser();
+    };
+  
     window.addEventListener('storage', handleCookieChange);
-    return () => window.removeEventListener('storage', handleCookieChange);
+    window.addEventListener('userCookieUpdated', handleUserCookieUpdate);
+    return () => {
+      window.removeEventListener('storage', handleCookieChange);
+      window.removeEventListener('userCookieUpdated', handleUserCookieUpdate);
+    };
   }, []);
 
   // close on click outside
@@ -105,7 +114,7 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            {user?.username}
+            {user?.fullname}
           </span>
           <span className="block text-xs">{user?.occupation}</span>
         </span>
