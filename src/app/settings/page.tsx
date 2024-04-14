@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
+import axios from 'axios';
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import Image from "next/image";
 import { Metadata } from "next";
@@ -17,23 +18,38 @@ interface User {
   _id: string;
   username: string;
   fullname: string;
+  phone: string;
   email: string;
   role: string;
   occupation: string;
   bio: string;
-}
+};
 
 const Settings = () => {
 
   const [user, setUser] = useState<User | null>(null);
+  const [initialUser, setInitialUser] = useState({});
+  const [username, setUsername] = useState('');
+  const [fullname, setFullname] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [occupation, setOccupation] = useState('');
+  const [bio, setBio] = useState('');
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         console.log('Raw cookie value:', Cookies.get('user'));
         const user = JSON.parse(Cookies.get('user') || '{}');
+        setInitialUser(user);
         if (Object.keys(user).length > 0) {
           setUser(user);
+          setUsername(user.username || '');
+          setFullname(user.fullname || '');
+          setPhone(user.phone || '');
+          setEmail(user.email || '');
+          setOccupation(user.occupation || '');
+          setBio(user.bio || '');
           console.log('Parsed user:', user);
         }
       } catch (error) {
@@ -43,6 +59,46 @@ const Settings = () => {
   
     fetchUser();
   }, []);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const user = JSON.parse(Cookies.get('user') || '{}');
+      const userId = user._id;
+
+      console.log('userId:', userId);
+
+      if (!userId) {
+        console.error('User ID is not defined');
+        return;
+      }
+
+      const token = Cookies.get('auth'); 
+
+      const updatedFields = {};
+      if (username !== initialUser.username) updatedFields.username = username;
+      if (phone !== initialUser.phone) updatedFields.phone = phone;
+      if (fullname !== initialUser.fullname) updatedFields.fullname = fullname;
+      if (email !== initialUser.email) updatedFields.email = email;
+      if (occupation !== initialUser.occupation) updatedFields.occupation = occupation;
+      if (bio !== initialUser.bio) updatedFields.bio = bio;
+      
+      const response = await axios.patch(`http://localhost:4000/user/users/${userId}`, updatedFields, {
+        
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const newUser = { ...user, ...response.data };
+      Cookies.set('user', JSON.stringify(newUser));
+      
+      console.log('User updated:', response.data);
+    } catch (error: any) {
+      console.error("error: ",error);
+    }
+  };
+
 
 
   return (
@@ -60,7 +116,7 @@ const Settings = () => {
                 </h3>
               </div>
               <div className="p-7">
-                <form action="#">
+                <form action="#" onSubmit={handleSubmit}>
                   <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
                     <div className="w-full sm:w-1/2">
                       <label
@@ -98,6 +154,7 @@ const Settings = () => {
                         <input
                           className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                           type="text"
+                          onChange={event => setFullname(event.target.value)}
                           name="fullName"
                           id="fullName"
                           placeholder="Your Full Name"
@@ -116,10 +173,11 @@ const Settings = () => {
                       <input
                         className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                         type="text"
+                        onChange={event => setPhone(event.target.value)}
                         name="phoneNumber"
                         id="phoneNumber"
                         placeholder="+216 ** *** ***"
-                        defaultValue="+216 20 731 135"
+                        defaultValue={user?.phone}
                       />
                     </div>
                   </div>
@@ -160,10 +218,11 @@ const Settings = () => {
                       <input
                         className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                         type="email"
+                        onChange={event => setEmail(event.target.value)}
                         name="emailAddress"
                         id="emailAddress"
                         placeholder="Email@gmail.com"
-                        defaultValue="Email@gmail.com"
+                        defaultValue={user.email}
                       />
                     </div>
                   </div>
@@ -204,10 +263,11 @@ const Settings = () => {
                       <input
                         className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                         type="text"
+                        onChange={event => setOccupation(event.target.value)}
                         name="Occupation"
                         id="Occupation"
                         placeholder="Job Title"
-                        defaultValue="Job Title"
+                        defaultValue={user.occupation}
                       />
                     </div>
                   </div>
@@ -222,10 +282,11 @@ const Settings = () => {
                     <input
                       className="w-full rounded border border-stroke bg-gray px-4.5 py-3 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                       type="text"
+                      onChange={event => setUsername(event.target.value)}
                       name="Username"
                       id="Username"
                       placeholder="Your Username"
-                      defaultValue="Username"
+                      defaultValue={user.username }
                     />
                   </div>
 
@@ -271,10 +332,11 @@ const Settings = () => {
                       <textarea
                         className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                         name="bio"
+                        onChange={event => setBio(event.target.value)}
                         id="bio"
                         rows={6}
                         placeholder="Write your bio here"
-                        defaultValue="Talk is cheap, show me the code!"
+                        defaultValue={user.bio}
                       ></textarea>
                     </div>
                   </div>
@@ -282,7 +344,7 @@ const Settings = () => {
                   <div className="flex justify-end gap-4.5">
                     <button
                       className="flex justify-center rounded border border-stroke px-6 py-2 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
-                      type="submit"
+                      
                     >
                       Cancel
                     </button>

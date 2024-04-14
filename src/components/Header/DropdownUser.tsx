@@ -21,6 +21,28 @@ const DropdownUser = () => {
   const dropdown = useRef<any>(null);
   const router = useRouter();
 
+  const fetchUser = () => {
+    const user = JSON.parse(Cookies.get('user') || '{}');
+    setUser(user);
+  };
+
+  // Fetch user data when component mounts
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  // Re-fetch user data when cookie changes
+  useEffect(() => {
+    const handleCookieChange = (e: Event) => {
+      if (e instanceof StorageEvent && e.key === 'user') {
+        fetchUser();
+      }
+    };
+
+    window.addEventListener('storage', handleCookieChange);
+    return () => window.removeEventListener('storage', handleCookieChange);
+  }, []);
+
   // close on click outside
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
