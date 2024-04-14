@@ -16,6 +16,7 @@ const metadata: Metadata = {
 interface User {
   _id: string;
   username: string;
+  fullname: string;
   email: string;
   role: string;
   occupation: string;
@@ -42,6 +43,7 @@ const Profile = () => {
   
     fetchUser();
   }, []);
+
   return (
     <DefaultLayout>
       <div className="mx-auto max-w-242.5">
@@ -148,8 +150,9 @@ const Profile = () => {
             </div>
             <div className="mt-4">
               <h3 className="mb-1.5 text-2xl font-semibold text-black dark:text-white">
-                {user?.username}
+                {user?.fullname}
               </h3>
+              <p className="font-medium">Username: {user.username}</p>
               <p className="font-medium">{user.occupation}</p>
               <div className="mx-auto mb-5.5 mt-4.5 grid max-w-94 grid-cols-3 rounded-md border border-stroke py-2.5 shadow-1 dark:border-strokedark dark:bg-[#37404F]">
                 <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 dark:border-strokedark xsm:flex-row">

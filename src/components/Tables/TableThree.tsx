@@ -33,6 +33,31 @@ const TableThree = () => {
     fetchRooms();
   }, []);
 
+
+  const deleteRoom = async (roomId: string) => {
+    const token = Cookies.get('auth');
+    console.log(token);
+    try {
+      const response = await axios.delete(`http://localhost:4000/room/rooms/${roomId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log(response.data);
+      setRooms([]);
+      const response2 = await axios.get('http://localhost:4000/room/rooms', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setRooms(response2.data);
+
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  
+
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
@@ -101,7 +126,7 @@ const TableThree = () => {
                         />
                       </svg>
                     </button>
-                    <button className="hover:text-primary">
+                    <button className="hover:text-primary" onClick={() => deleteRoom(room?._id)}>
                       <svg
                         className="fill-current"
                         width="18"
