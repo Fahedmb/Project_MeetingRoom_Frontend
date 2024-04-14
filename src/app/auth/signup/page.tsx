@@ -11,7 +11,6 @@ import DefaultLayout from "@/components/Layouts/DefaultLayout";
 const metadata: Metadata = {
   title: "Next.js SignUp Page | TailAdmin - Next.js Dashboard Template",
   description: "This is Next.js SignUp Page TailAdmin Dashboard Template",
-  // other metadata
 };
 
 const SignUp: React.FC = () => {
@@ -23,16 +22,16 @@ const SignUp: React.FC = () => {
 
   const handleRegister = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log('handleRegister called'); // Debugging line
-    console.log('Username:', username); // Debugging line
-    console.log('Email:', email); // Debugging line
-    console.log('Password:', password); // Debugging line
+    console.log('handleRegister called'); 
+    console.log('Username:', username); 
+    console.log('Email:', email); 
+    console.log('Password:', password); 
     try {
       const response = await axios.post('/api/register', { username, email, password });
-      console.log('Response:', response); // Debugging line
-      router.push('/');
+      console.log('Response:', response); 
+      router.push('/auth/signin');
     } catch (error: any) {
-      console.log('Error:', error); // Debugging line
+      console.log('Error:', error); 
       setError(error.response.data.message);
     }
   };

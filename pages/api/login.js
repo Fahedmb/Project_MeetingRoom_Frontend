@@ -11,14 +11,30 @@ export default async function handler(req, res) {
   });
 
   if (response.ok) {
-    const { token } = await response.json();
-    res.setHeader('Set-Cookie', cookie.serialize('auth', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
-      maxAge: 3600,
-      path: '/'
-    }));
+    const { token, userResponse } = await response.json();
+    
+    console.log('userResponse:', userResponse);
+
+    res.setHeader('Set-Cookie', [
+      cookie.serialize('auth', token, {
+        httpOnly: false,
+        //secure: process.env.NODE_ENV !== 'development',
+        secure: true,
+        //sameSite: 'strict',
+        sameSite: 'none',
+        maxAge: 3600,
+        path: '/'
+      }),
+      cookie.serialize('user', JSON.stringify(userResponse), {
+        httpOnly: false,
+        //secure: process.env.NODE_ENV !== 'development',
+        secure: true,
+        //sameSite: 'lax',
+        sameSite: 'none',
+        maxAge: 3600,
+        path: '/'
+      })
+    ]);
     res.json({ message: 'Login successful' });
   } else {
     res.status(401).json({ message: 'Invalid credentials' });

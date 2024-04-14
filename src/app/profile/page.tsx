@@ -1,21 +1,53 @@
+'use client'
+import { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import Image from "next/image";
 import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import Link from "next/link";
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: "Next.js Profile | TailAdmin - Next.js Dashboard Template",
   description:
     "This is Next.js Profile page for TailAdmin - Next.js Tailwind CSS Admin Dashboard Template",
 };
 
+interface User {
+  _id: string;
+  username: string;
+  email: string;
+  role: string;
+  occupation: string;
+  bio: string;
+}
+
 const Profile = () => {
+
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        console.log('Raw cookie value:', Cookies.get('user'));
+        const user = JSON.parse(Cookies.get('user') || '{}');
+        if (Object.keys(user).length > 0) {
+          setUser(user);
+          console.log('Parsed user:', user);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      }
+    };
+  
+    fetchUser();
+  }, []);
   return (
     <DefaultLayout>
       <div className="mx-auto max-w-242.5">
         <Breadcrumb pageName="Profile" />
 
+      {user ? (
         <div className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="relative z-20 h-35 md:h-65">
             <Image
@@ -116,9 +148,9 @@ const Profile = () => {
             </div>
             <div className="mt-4">
               <h3 className="mb-1.5 text-2xl font-semibold text-black dark:text-white">
-                Danish Heilium
+                {user?.username}
               </h3>
-              <p className="font-medium">Ui/Ux Designer</p>
+              <p className="font-medium">{user.occupation}</p>
               <div className="mx-auto mb-5.5 mt-4.5 grid max-w-94 grid-cols-3 rounded-md border border-stroke py-2.5 shadow-1 dark:border-strokedark dark:bg-[#37404F]">
                 <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 dark:border-strokedark xsm:flex-row">
                   <span className="font-semibold text-black dark:text-white">
@@ -145,11 +177,7 @@ const Profile = () => {
                   About Me
                 </h4>
                 <p className="mt-4.5">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Pellentesque posuere fermentum urna, eu condimentum mauris
-                  tempus ut. Donec fermentum blandit aliquet. Etiam dictum
-                  dapibus ultricies. Sed vel aliquet libero. Nunc a augue
-                  fermentum, pharetra ligula sed, aliquam lacus.
+                 {user.bio}
                 </p>
               </div>
 
@@ -308,6 +336,33 @@ const Profile = () => {
             </div>
           </div>
         </div>
+      ) : (
+        <div className="flex items-center justify-center h-80">
+          <div className="flex items-center justify-center gap-2">
+            <svg
+              className="w-6 h-6 text-primary animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V4"
+              ></path>
+            </svg>
+            <span className="text-primary">Loading...</span>
+          </div>
+        </div>
+      )}
       </div>
     </DefaultLayout>
   );

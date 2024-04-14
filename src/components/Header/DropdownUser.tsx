@@ -1,12 +1,25 @@
+'use client'
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import Image from "next/image";
+import Cookies from 'js-cookie';
+
+interface User {
+  _id: string;
+  username: string;
+  email: string;
+  role: string;
+  occupation: string;
+  bio: string;
+}
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
+  const [user, setUser] = useState<User | null>(null);
   const trigger = useRef<any>(null);
   const dropdown = useRef<any>(null);
+  const router = useRouter();
 
   // close on click outside
   useEffect(() => {
@@ -34,6 +47,32 @@ const DropdownUser = () => {
     return () => document.removeEventListener("keydown", keyHandler);
   });
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        console.log('Raw cookie to header value:', Cookies.get('user'));
+        const user = JSON.parse(Cookies.get('user') || '{}');
+        if (Object.keys(user).length > 0) {
+          setUser(user);
+          console.log('Parsed header user:', user);
+        }
+      } catch (error) {
+        console.error('Failed to fetch header user:', error);
+      }
+    };
+  
+    fetchUser();
+  }, []);
+
+  const handleLogout = () => {
+    // Clear the auth and user cookies
+    Cookies.remove('auth');
+    Cookies.remove('user');
+
+    // Redirect the user to the login page
+    router.push('/auth/signin');
+  };
+
   return (
     <div className="relative">
       <Link
@@ -44,9 +83,9 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            Thomas Anree
+            {user?.username}
           </span>
-          <span className="block text-xs">UX Designer</span>
+          <span className="block text-xs">{user?.occupation}</span>
         </span>
 
         <span className="h-12 w-12 rounded-full">
@@ -161,7 +200,10 @@ const DropdownUser = () => {
             </Link>
           </li>
         </ul>
-        <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+        <button 
+        className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base" 
+        onClick={handleLogout}
+        >
           <svg
             className="fill-current"
             width="22"

@@ -1,33 +1,38 @@
-import { Package } from "@/types/package";
+'use client'
+import { useState, useEffect } from 'react';
+import axios from "axios";
+import Cookies from 'js-cookie';
 
-const packageData: Package[] = [
-  {
-    name: "Free package",
-    price: 0.0,
-    invoiceDate: `Jan 13,2023`,
-    status: "Paid",
-  },
-  {
-    name: "Standard Package",
-    price: 59.0,
-    invoiceDate: `Jan 13,2023`,
-    status: "Paid",
-  },
-  {
-    name: "Business Package",
-    price: 99.0,
-    invoiceDate: `Jan 13,2023`,
-    status: "Unpaid",
-  },
-  {
-    name: "Standard Package",
-    price: 59.0,
-    invoiceDate: `Jan 13,2023`,
-    status: "Pending",
-  },
-];
+interface Room {
+  _id: string;
+  roomNumber: string;
+  roomCapacity: number;
+  roomStatus: string;
+}
 
 const TableThree = () => {
+
+  const [rooms, setRooms] = useState([]);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const token = Cookies.get('auth');
+        console.log(token);
+        const response = await axios.get('http://localhost:4000/room/rooms', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setRooms(response.data);
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      }
+    };
+
+    fetchRooms();
+  }, []);
+
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
@@ -35,13 +40,13 @@ const TableThree = () => {
           <thead>
             <tr className="bg-gray-2 text-left dark:bg-meta-4">
               <th className="min-w-[220px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                Package
+                Room Number
               </th>
               <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                Invoice date
+                Room Capacity
               </th>
               <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                Status
+                Room Status
               </th>
               <th className="px-4 py-4 font-medium text-black dark:text-white">
                 Actions
@@ -49,30 +54,30 @@ const TableThree = () => {
             </tr>
           </thead>
           <tbody>
-            {packageData.map((packageItem, key) => (
-              <tr key={key}>
+            {rooms.map((room) => (
+              <tr key={room?._id}>
                 <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                   <h5 className="font-medium text-black dark:text-white">
-                    {packageItem.name}
+                    {room?.room_number}
                   </h5>
-                  <p className="text-sm">${packageItem.price}</p>
+                  <p className="text-sm">Floor: {room?.room_floor}</p>
                 </td>
                 <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   <p className="text-black dark:text-white">
-                    {packageItem.invoiceDate}
+                   {room?.room_capacity}
                   </p>
                 </td>
                 <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   <p
                     className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                      packageItem.status === "Paid"
+                      room?.room_status === "available"
                         ? "bg-success text-success"
-                        : packageItem.status === "Unpaid"
+                        : room?.room_status === "not available"
                           ? "bg-danger text-danger"
                           : "bg-warning text-warning"
                     }`}
                   >
-                    {packageItem.status}
+                    {room?.room_status}
                   </p>
                 </td>
                 <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
