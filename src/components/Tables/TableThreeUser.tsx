@@ -17,6 +17,7 @@ interface User {
 const TableThreeUser = () => {
 
   const [users, setUsers] = useState([]);
+  const [shownBioUserId, setShownBioUserId] = useState(null);
 
   useEffect(() => {
     const fetchusers = async () => {
@@ -80,6 +81,9 @@ const TableThreeUser = () => {
               <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
                 Occupation
               </th>
+              <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
+                Bio
+              </th>
               <th className="px-4 py-4 font-medium text-black dark:text-white">
                 Actions
               </th>
@@ -118,8 +122,12 @@ const TableThreeUser = () => {
                   </p>
                 </td>
                 <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                  <div className="flex items-center space-x-3.5">
-                    <button className="hover:text-primary">
+                  <div className="relative inline-block">
+                    <button
+                      onMouseEnter={() => setShownBioUserId(user._id)}
+                      onMouseLeave={() => setShownBioUserId(null)}
+                      className="inline-flex items-center justify-center rounded-md border border-meta-3 px-2 py-1 text-center font-tiny text-meta-3 hover:bg-opacity-90 lg:px-4 xl:px-5"
+                    >
                       <svg
                         className="fill-current"
                         width="18"
@@ -137,8 +145,19 @@ const TableThreeUser = () => {
                           fill=""
                         />
                       </svg>
-                    </button>
-                    <button className="hover:text-primary" onClick={() => deleteUser(user?._id)}>
+                      </button>
+                    {shownBioUserId === user._id && (
+                      <div 
+                        className="w-80 absolute left-1/2 transform -translate-x-1/2 -top-full mt-14 inline-flex items-center justify-center rounded-md border bg-meta-3 px-5 py-2 text-center font-small text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
+                      >
+                        {user?.bio}
+                      </div>
+                    )}
+                  </div>
+                </td>
+                <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                  <div className="flex items-center space-x-3.5">
+                    <button className="hover:text-danger" onClick={() => deleteUser(user?._id)}>
                       <svg
                         className="fill-current"
                         width="18"

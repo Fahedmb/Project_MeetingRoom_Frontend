@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 interface Option {
   value: string;
@@ -11,7 +13,7 @@ interface DropdownProps {
   id: string;
 }
 
-const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
+const MultiSelectRoom: React.FC<DropdownProps> = ({ id }) => {
   const [options, setOptions] = useState<Option[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [show, setShow] = useState(false);
@@ -19,20 +21,28 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
   const trigger = useRef<any>(null);
 
   useEffect(() => {
-    const loadOptions = () => {
-      const newOptions: Option[] = [];
-      for (let i = 8; i <= 20; i += 2) {
-        const time = i < 10 ? `0${i}:00` : `${i}:00`;
-        newOptions.push({
-          value: time,
-          text: time,
-          selected: false,
+    const fetchRooms = async () => {
+      try {
+        const token = Cookies.get('auth');
+        const response = await axios.get('http://localhost:4000/room/rooms', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
+  
+        const newOptions: Option[] = response.data.map((room: any) => ({
+          value: room.room_number,
+          text: room.room_number,
+          selected: false,
+        }));
+  
+        setOptions(newOptions);
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
       }
-      setOptions(newOptions);
     };
   
-    loadOptions();
+    fetchRooms();
   }, []);
 
   const open = () => {
@@ -49,7 +59,7 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
     if (selected.length > 0) {
       newOptions[selected[0]].selected = false;
     }
-  
+
     newOptions[index].selected = true;
     setSelected([index]);
 
@@ -92,13 +102,13 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
         Multiselect Dropdown
       </label>
       <div>
-        <select className="hidden" id={id}>
-          {options.map((option, index) => (
-            <option key={index} value={option.value}>
-              {option.text}
-            </option>
-          ))}
-        </select>
+      <select className="hidden" id={id}>
+        {options.map((option, index) => (
+          <option key={index} value={option.value}>
+            {option.text}
+          </option>
+        ))}
+      </select>
 
         <div className="flex flex-col items-center">
           <input name="values" type="hidden" defaultValue={selectedValues()} />
@@ -217,4 +227,4 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
   );
 };
 
-export default MultiSelect;
+export default MultiSelectRoom;

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import axios from "axios";
 import Cookies from 'js-cookie';
+import Link from 'next/link';
 
 const TableThree = () => {
 
@@ -139,7 +140,7 @@ const TableThree = () => {
                 </td>
                 <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   <div className="flex items-center space-x-3.5">
-                    <button className="hover:text-primary" onClick={() => deleteRoom(room?._id)}>
+                    <button className="hover:text-danger" onClick={() => deleteRoom(room?._id)}>
                       <svg
                         className="fill-current"
                         width="18"
