@@ -3,6 +3,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 interface Option {
+  id : string;
   value: string;
   text: string;
   selected: boolean;
@@ -11,9 +12,10 @@ interface Option {
 
 interface DropdownProps {
   id: string;
+  setSelectedRoom: (room: string) => void;
 }
 
-const MultiSelectRoom: React.FC<DropdownProps> = ({ id }) => {
+const MultiSelectRoom: React.FC<DropdownProps> = ({ id, setSelectedRoom }) => {
   const [options, setOptions] = useState<Option[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [show, setShow] = useState(false);
@@ -31,6 +33,7 @@ const MultiSelectRoom: React.FC<DropdownProps> = ({ id }) => {
         });
   
         const newOptions: Option[] = response.data.map((room: any) => ({
+          id: room._id.$oid,
           value: room.room_number,
           text: room.room_number,
           selected: false,
@@ -64,6 +67,7 @@ const MultiSelectRoom: React.FC<DropdownProps> = ({ id }) => {
     setSelected([index]);
 
     setOptions(newOptions);
+    setSelectedRoom(newOptions[index].id);
   };
 
   const remove = (index: number) => {
