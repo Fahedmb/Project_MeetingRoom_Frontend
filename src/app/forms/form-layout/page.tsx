@@ -1,5 +1,5 @@
 'use client';
-import react,{ useState,useEffect } from "react";
+import { useState,useEffect } from "react";
 import axios from "axios";
 import Cookies from 'js-cookie';
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -28,46 +28,64 @@ const FormLayout = () => {
   const [selectedStartDate, setSelectedStartDate] = useState(new Date());
   const [selectedEndDate, setSelectedEndDate] = useState(new Date());
 
-  const handleStartTimeChange = (time) => {
-    const formattedStartTime = format(new Date(`${format(selectedStartDate, 'yyyy-MM-dd')}T${time}:00.000Z`), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+  interface Option {
+    id: string;
+    value: string;
+    text: string;
+    selected: boolean;
+  }
+
+  const handleStartTimeChange = (time: string): void => {
+    const formattedStartTime: string = format(
+      new Date(`${format(selectedStartDate, 'yyyy-MM-dd')}T${time}:00.000Z`),
+      "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    );
     setSelectedStartTime(formattedStartTime);
     console.log(`Selected start time: ${formattedStartTime}`);
   };
 
-  const handleEndTimeChange = (time) => {
-    const formattedEndTime = format(new Date(`${format(selectedEndDate, 'yyyy-MM-dd')}T${time}:00.000Z`), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+  const handleEndTimeChange = (time: string): void => {
+    const formattedEndTime: string = format(
+      new Date(`${format(selectedEndDate, 'yyyy-MM-dd')}T${time}:00.000Z`),
+      "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    );
     setSelectedEndTime(formattedEndTime);
     console.log(`Selected end time: ${formattedEndTime}`);
   };
 
+
+  // Reserve a room by sending a POST request to the server
+  // send the id of the user, the id of the room, the startingtime and the endingtime
   const reserveRoom = async () => {
 
     const token = Cookies.get('auth');
     const userData = Cookies.get('user');
     const user = JSON.parse(userData as string);
 
+    interface SelectedRoom {
+      id: string;
+      value: string;
+      text: string;
+      selected: boolean;
+    }
+
     const requestBody = {
       user: user._id, 
-      room: selectedRoom,
+      room: (selectedRoom as unknown as SelectedRoom).id,
       startTime: format(new Date(selectedStartTime), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
       endTime: format(new Date(selectedEndTime), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
     };
-  
+
     console.log('Request body:', requestBody);
 
     try {
       const response = await axios.post('http://localhost:4000/reservation/reserve', 
-        {
-          user: user._id, 
-          room: selectedRoom,
-          startTime: format(new Date(selectedStartTime), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
-          endTime: format(new Date(selectedEndTime), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
-        },
+        requestBody,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          timeout: 5000,
+          //timeout: 5000,
         }
       );
     
@@ -80,6 +98,8 @@ const FormLayout = () => {
     }
   };
 
+  // Fetch rooms from the server and populate the options list with them
+  // console.log the selected room to see if it's being updated
   useEffect(() => {
     const fetchRooms = async () => {
       try {
@@ -98,7 +118,8 @@ const FormLayout = () => {
         }));
   
         setOptions(newOptions);
-        console.log(newOptions)
+        console.log('Rooms:', newOptions)
+
       } catch (error) {
         console.error('Error fetching rooms:', error);
       }
@@ -106,6 +127,10 @@ const FormLayout = () => {
   
     fetchRooms();
   }, []);
+
+  useEffect(() => {
+    console.log('selectedRoom:', selectedRoom);
+  }, [selectedRoom]);
 
   return (
     <DefaultLayout>
@@ -120,7 +145,14 @@ const FormLayout = () => {
             <form action="#">
               <div className="p-6.5">
                 
-                <select value={selectedRoom} onChange={e => setSelectedRoom(e.target.value)}>
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Select the room:
+                </label>
+                <select 
+                className="mb-2 flex rounded border border-stroke py-2 pl-3 pr-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+                value={selectedRoom} 
+                onChange={e => setSelectedRoom(e.target.value)}
+                >
                   {options.map((option, index) => (
                     <option key={index} value={option.value}>
                       {option.text}
@@ -128,16 +160,39 @@ const FormLayout = () => {
                   ))}
                 </select>
                 
-                <DatePicker selected={selectedStartDate} onChange={date => setSelectedStartDate(date as Date)} />
-                <select onChange={e => handleStartTimeChange(e.target.value)}>
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Select the starting day of your reservation:
+                </label>
+                <DatePicker 
+                className="mb-2 flex rounded border border-stroke py-2 pl-3 pr-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+                selected={selectedStartDate} onChange={date => setSelectedStartDate(date as Date)} />
+                
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Select the exact hour starting time of your reservation:
+                </label>
+                <select 
+                className="mb-2 flex rounded border border-stroke py-2 pl-3 pr-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+                onChange={e => handleStartTimeChange(e.target.value)}>
                   {timeOptions.map(time => (
                     <option key={time} value={time}>
                       {time}
                     </option>
                   ))}
                 </select>
-                <DatePicker selected={selectedEndDate} onChange={date => setSelectedEndDate(date as Date)} />
-                <select onChange={e => handleEndTimeChange(e.target.value)}>
+                
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Select the ending day of your reservation:
+                </label>
+                <DatePicker 
+                className="mb-2 flex rounded border border-stroke py-2 pl-3 pr-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+                selected={selectedEndDate} onChange={date => setSelectedEndDate(date as Date)} />
+                
+                <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                  Select the exact hour ending time of your reservation:
+                </label>
+                <select 
+                className="mb-2 flex rounded border border-stroke py-2 pl-3 pr-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+                onChange={e => handleEndTimeChange(e.target.value)}>
                   {timeOptions.map(time => (
                     <option key={time} value={time}>
                       {time}
